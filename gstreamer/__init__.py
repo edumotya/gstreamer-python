@@ -9,7 +9,7 @@ from gi.repository import Gst, GLib, GObject, GstApp, GstVideo, GstBase  # noqa:
 
 from .gst_hacks import map_gst_buffer, map_gst_memory  # noqa:F401,F402
 
-from .utils import gst_buffer_to_ndarray, gst_buffer_with_pad_to_ndarray, ndarray_to_gst_buffer  # noqa:F401,F402
+from .utils import gst_buffer_to_ndarray, gst_buffer_with_caps_to_ndarray, gst_buffer_with_pad_to_ndarray, ndarray_to_gst_buffer  # noqa:F401,F402
 
 from .gst_tools import GstVideoSink, GstVideoSource, GstPipeline, GstContext  # noqa:F401,F402
 
