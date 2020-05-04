@@ -3,23 +3,25 @@ from ctypes import *
 from typing import List
 
 import gi
-gi.require_version('Gst', '1.0')
+
+gi.require_version("Gst", "1.0")
 from gi.repository import Gst  # noqa:F401,F402
 
 
 class GstObjectInfo(Structure):
-    _fields_ = [("x", c_int),
-                ("y", c_int),
-                ("width", c_int),
-                ("height", c_int),
-                ("confidence", c_float),
-                ("class_name", c_char_p),
-                ("track_id", c_int)]
+    _fields_ = [
+        ("x", c_int),
+        ("y", c_int),
+        ("width", c_int),
+        ("height", c_int),
+        ("confidence", c_float),
+        ("class_name", c_char_p),
+        ("track_id", c_int),
+    ]
 
 
 class GstObjectInfoArray(Structure):
-    _fields_ = [("items", POINTER(GstObjectInfo)),
-                ("size", c_int)]
+    _fields_ = [("items", POINTER(GstObjectInfo)), ("size", c_int)]
 
 
 GstObjectInfoArrayPtr = POINTER(GstObjectInfoArray)
@@ -44,11 +46,17 @@ def to_gst_objects_info(objects: List[dict]) -> GstObjectInfoArray:
     gst_objects_info.items = (GstObjectInfo * gst_objects_info.size)()
 
     for i, obj in enumerate(objects):
-        x, y, width, height = obj['bounding_box']
-        gst_objects_info.items[i] = (x, y, width, height,
-                                     obj["confidence"],
-                                     obj["class_name"].encode("utf-8"),
-                                     obj.get("track_id", 0))
+        x, y, width, height = obj["bounding_box"]
+        class_name = create_string_buffer(obj["class_name"].encode("utf-8"))
+        gst_objects_info.items[i] = (
+            x,
+            y,
+            width,
+            height,
+            obj["confidence"],
+            cast(class_name, c_char_p),
+            obj.get("track_id", 0),
+        )
 
     return gst_objects_info
 
@@ -63,10 +71,14 @@ def to_list(gst_object_info: GstObjectInfoArray) -> List[dict]:
             class_name = obj.class_name.decode("utf-8")
         except Exception:
             pass
-        objects.append({"bounding_box": [obj.x, obj.y, obj.width, obj.height],
-                        "confidence": obj.confidence,
-                        "class_name": class_name,
-                        "track_id": obj.track_id})
+        objects.append(
+            {
+                "bounding_box": [obj.x, obj.y, obj.width, obj.height],
+                "confidence": obj.confidence,
+                "class_name": class_name,
+                "track_id": obj.track_id,
+            }
+        )
     return objects
 
 
